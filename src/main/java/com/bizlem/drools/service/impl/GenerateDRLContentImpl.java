@@ -74,7 +74,7 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
       case "String":
         buffer.append(variableName);
         buffer.append(" in (");
-        buffer.append(splitValue(variableValue) + " ) ");
+        buffer.append(splitValue(variableValue) + ") ");
         break;
 
       case "Integer":
