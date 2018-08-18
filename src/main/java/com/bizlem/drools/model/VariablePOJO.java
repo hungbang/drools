@@ -1,0 +1,88 @@
+package com.bizlem.drools.model; 
+import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.NoArgsConstructor;
+@Data 
+@NoArgsConstructor 
+@JsonIgnoreProperties(ignoreUnknown = true) 
+public class VariablePOJO 
+ { 
+public Integer hi; 
+public String pr_possession_occupation; 
+public String project; 
+public String project_name; 
+public String bookingID; 
+public Integer bizlemID; 
+public Integer accountid; 
+public String test_Variable; 
+public Integer saleValue; 
+public Integer case_number; 
+public Integer id; 
+public String tt_property_registration_fee; 
+public Integer price2; 
+public String ppp_delaypenalty; 
+public Integer fieldvalue; 
+public Integer account_val; 
+public String output_field_name_3; 
+public String tt_registration_fee_document_penalty; 
+public String output_field_name_4; 
+public String output_field_name_1; 
+public String output_field_name_2; 
+public String  contact_Email; 
+public String tt_registration_fee_document_penalty_days; 
+public Integer caseid; 
+public Integer accountno; 
+public String case_Subject; 
+public Integer name; 
+public String output_value2; 
+public Integer case_value; 
+public String output_value1; 
+public Integer project_bizlem; 
+public String output_value0; 
+public Integer  caseCaseNumber; 
+public String buyerNationality; 
+public String clause1; 
+public String clause2; 
+public Integer account_number; 
+public String output1; 
+public String output2; 
+public String clause5; 
+public Integer city; 
+public String clause3; 
+public String clause4; 
+public String pr_Anticipated_Comletion_Date; 
+public Integer bi; 
+public String case_name; 
+public String facing; 
+public Integer saleVal; 
+public Integer employeeID; 
+public String saleDate; 
+public Integer contact_id; 
+public String  account_BillingCountry; 
+public Integer Price1; 
+public Integer casenumber; 
+public String account_Type; 
+public String propertyType; 
+public String account_name; 
+public Integer  account_AnnualRevenue; 
+public String bedroomType; 
+public Integer SF_2; 
+public Integer billingcity; 
+public String  contact_name; 
+public Integer SF_1; 
+public String contact_Number; 
+public Integer noOfProperties; 
+public Integer leadname; 
+public Integer priceValue; 
+public String pr_delaypenalty; 
+public String template_name; 
+public String tt_registration_fee_document_within; 
+public Integer account_id; 
+public Integer pi; 
+public String salesPerson; 
+public Integer caseCaseVale; 
+public Integer tr; 
+public Integer leadid; 
+public String account_BillingCity; 
+
+}
