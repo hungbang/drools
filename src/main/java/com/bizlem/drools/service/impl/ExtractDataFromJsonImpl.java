@@ -16,17 +16,15 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
 @Service
 @Slf4j
 public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
-
+    final String drlPath = System.getProperty("com.bizlem.appDir") + File.separator;
     @Autowired
     GenerateDRLContent drlContent;
 
@@ -34,12 +32,13 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
     private String pojoPath;
 
 
+
     @Override
-    public void extractRulesAndVariableInfo(String inputJson) throws FileNotFoundException {
-        final String drlPath = ResourceUtils.getFile("classpath:rules").getPath() + "/";
+    public void extractRulesAndVariableInfo(String inputJson) throws IOException {
+
         log.info("Path of the folder that contains rules file: {}", drlPath);
         ExtractedData extractedData = null;
-        Map<String, String> existingVariableNameToDatatype = null;
+        Map<String, String> existingVariableNameToDatatype;
 
         // find POJO exist
         if (ReadFile.isFileAvailable(pojoPath))
@@ -67,15 +66,12 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String mapdata = objectMapper.writeValueAsString(mergedVariableToDataType);
-            final String path = ResourceUtils.getFile("classpath:rules").getPath() + "/" + POJO_NAME;
+            final String path = drlPath + POJO_NAME;
             FileUtils.write(new File(path), mapdata, "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
             log.error(e.getClass().getSimpleName(), e);
         }
-//        String resultPojoContent = pojoContent.initPojoContent(mergedVariableToDataType);
-//        WriteContentToFile.write(pojoPath, POJO_NAME, resultPojoContent);
-
     }
 
     public ExtractedData extractDataFromJson(String inputJson) throws ParseException {

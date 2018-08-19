@@ -1,0 +1,23 @@
+package com.bizlem;
+
+import java.util.Map;
+
+rule rule1
+dialect "mvel"
+when
+$map: Map ($map.get("contact_Name")  in ("Jitendra")  && $map.get("account_Name")  in ("acc1")  && $map.get("contact_Email")  in ("Jitendra@bizlem.com")  && $map.get("account_Type")  in ("Saving")  && $map.get("account_AnnualRevenue") <45000  && $map.get("case_Subject")  in ("Phone is not Working")  && $map.get("caseCaseNumber")  == 201345  && $map.get("account_BillingCountry")  in ("IN","US")  && $map.get("account_BillingCity")  in ("Mumbai","Delhi") )
+then
+$map.put("output1","Send Technician");
+$map.put("output2","Charge 500");
+end
+
+rule rule2
+dialect "mvel"
+when
+$map: Map ($map.get("account_Name")  in ("acc1","acc2","acc3")  && $map.get("account_Type")  in ("Saved")  && $map.get("test_Variable")  in ("IN","US")  && $map.get("account_BillingCity")  in ("Mumbai","Delhi") )
+then
+$map.put("output_field_name_3","output_field");
+$map.put("output_field_name_4","output_field");
+$map.put("output_field_name_1","output_field_value_1");
+$map.put("output_field_name_2","output_field");
+end
