@@ -2,6 +2,7 @@ package com.bizlem.drools.service.impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieFileSystem;
@@ -22,10 +23,9 @@ public class RuleCallingServiceImpl implements RuleCallingService {
 
 
   @Override
-  public VariablePOJO callRules(String drlName, VariablePOJO variablePOJO) throws FileNotFoundException {
+  public Map<String, String> callRules(String drlName, Map<String, String> variablePOJO) throws FileNotFoundException {
     final String drlPath = ResourceUtils.getFile("classpath:rules").getPath() + "/";
     log.info("Path of the folder that contains rules file: {}", drlPath);
-    VariablePOJO ruleInput = variablePOJO;
 
     KieServices kieServices = KieServices.Factory.get();
     File file = new File(drlPath.concat(drlName));
@@ -36,11 +36,11 @@ public class RuleCallingServiceImpl implements RuleCallingService {
     KieContainer kc = kieServices.newKieContainer(kieServices.getRepository().getDefaultReleaseId());
 
     KieSession kSession = kc.newKieSession();
-    kSession.insert(ruleInput);
+    kSession.insert(variablePOJO);
     kSession.fireAllRules();
     
     log.info("fired all rules");
-    return ruleInput;
+    return variablePOJO;
   }
 
 }

@@ -1,12 +1,14 @@
 package com.bizlem.drools.service.impl;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.bizlem.drools.model.ExtractedData;
+import com.bizlem.drools.model.Rules;
+import com.bizlem.drools.service.ExtractDataFromJson;
+import com.bizlem.drools.service.GenerateDRLContent;
+import com.bizlem.drools.util.ReadFile;
+import com.bizlem.drools.util.WriteContentToFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -14,15 +16,12 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.bizlem.drools.model.ExtractedData;
-import com.bizlem.drools.model.Rules;
-import com.bizlem.drools.service.ExtractDataFromJson;
-import com.bizlem.drools.service.GenerateDRLContent;
-import com.bizlem.drools.service.GeneratePojoContent;
-import com.bizlem.drools.util.ReadFile;
-import com.bizlem.drools.util.WriteContentToFile;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ResourceUtils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -30,12 +29,6 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
 
     @Autowired
     GenerateDRLContent drlContent;
-
-    @Autowired
-    GeneratePojoContent pojoContent;
-
-//  @Value("${drools.drlFilePath}")
-//  private String drlPath;
 
     @Value("${drools.PojoFilepath}")
     private String pojoPath;
@@ -62,7 +55,7 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
         }
         // content
         String drlName = extractedData.getDrlName().concat(".drl");
-        final String POJO_NAME = "VariablePOJO.java";
+        final String POJO_NAME = "VariablePOJO.json";
 
         // write DRL File
         String resultContent = drlContent.initDrlContent(extractedData.getRules(), extractedData.getVariableNameToDataType());
@@ -71,9 +64,17 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
 
         // write POJO File
         Map<String, String> mergedVariableToDataType = mergeVariables(existingVariableNameToDatatype, extractedData.getVariableNameToDataType());
-
-        String resultPojoContent = pojoContent.initPojoContent(mergedVariableToDataType);
-        WriteContentToFile.write(pojoPath, POJO_NAME, resultPojoContent);
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String mapdata = objectMapper.writeValueAsString(mergedVariableToDataType);
+            final String path = ResourceUtils.getFile("classpath:rules").getPath() + "/" + POJO_NAME;
+            FileUtils.write(new File(path), mapdata, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error(e.getClass().getSimpleName(), e);
+        }
+//        String resultPojoContent = pojoContent.initPojoContent(mergedVariableToDataType);
+//        WriteContentToFile.write(pojoPath, POJO_NAME, resultPojoContent);
 
     }
 
