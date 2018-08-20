@@ -69,7 +69,6 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
             final String path = drlPath + POJO_NAME;
             FileUtils.write(new File(path), mapdata, "UTF-8");
         } catch (IOException e) {
-            e.printStackTrace();
             log.error(e.getClass().getSimpleName(), e);
         }
     }
