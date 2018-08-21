@@ -12,25 +12,26 @@ import com.bizlem.drools.service.GenerateDRLContent;
 
 @Service
 public class GenerateDRLContentImpl implements GenerateDRLContent {
-    String newLine = System.lineSeparator();
+    private static final String MAP_GET = "$map.get(\"";
+    private final String newLine = System.lineSeparator();
 
     @Override
     public String initDrlContent(List<Rules> ruleList, Map<String, String> variableToDataType) {
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         // Add package structure
         buffer.append(packageAndImportClasses());
 
         for (Rules rules : ruleList) {
             buffer.append(newLine);
-            buffer.append("rule " + rules.getRuleName() + newLine);
+            buffer.append("rule ").append(rules.getRuleName()).append(newLine);
             buffer.append("dialect \"mvel\"");
-            buffer.append(newLine + "when" + newLine);
+            buffer.append(newLine).append("when").append(newLine);
             buffer.append("$map: Map (");
 
             // add condition for each rule
             buffer.append(condition(rules.getInputFieldPair(), variableToDataType));
-            buffer.append(")" + newLine);
+            buffer.append(")").append(newLine);
 
             buffer.append("then");
             buffer.append(newLine);
@@ -69,22 +70,22 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
     }
 
     private String valueOnDataType(String variableName, String variableValue, String dataType) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         switch (dataType.trim()) {
             case "String":
-                buffer.append("$map.get(\"" + variableName + "\")" + " ");
+                buffer.append(MAP_GET).append(variableName).append("\")").append(" ");
                 buffer.append(" in (");
-                buffer.append(splitValue(variableValue) + ") ");
+                buffer.append(splitValue(variableValue)).append(") ");
                 break;
 
             case "Integer":
-                buffer.append("$map.get(\"" + variableName + "\")" + " ");
-                buffer.append(checkOperatorInteger(variableValue) + " ");
+                buffer.append(MAP_GET).append(variableName).append("\")").append(" ");
+                buffer.append(checkOperatorInteger(variableValue)).append(" ");
                 break;
 
             default:
-                buffer.append("$map.get(\"" + variableName + "\")" + " == ");
+                buffer.append(MAP_GET).append(variableName).append("\")").append(" == ");
                 buffer.append(variableValue);
         }
         return buffer.toString();
@@ -95,20 +96,20 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
     }
 
     private String action(Map<String, String> ruleActionFields) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         for (Map.Entry<String, String> entry : ruleActionFields.entrySet()) {
 
             String variableName = entry.getKey();
             String variableValue = entry.getValue();
 
-            buffer.append("$map.put(\"" + variableName + "\"" + ",\"" + variableValue + "\"" + ");");
+            buffer.append("$map.put(\"").append(variableName).append("\"").append(",\"").append(variableValue).append("\"").append(");");
             buffer.append(newLine);
         }
         return buffer.toString();
     }
 
     private String checkOperatorInteger(String variable) {
-        if (variable.startsWith("<") || variable.startsWith(">") || variable.startsWith("=="))
+        if (variable.startsWith("<") || variable.startsWith(">") || variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<="))
             return variable;
 
         return " == " + variable;

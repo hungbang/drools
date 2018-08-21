@@ -6,6 +6,7 @@ import com.bizlem.drools.service.ExtractDataFromJson;
 import com.bizlem.drools.service.GenerateDRLContent;
 import com.bizlem.drools.util.ReadFile;
 import com.bizlem.drools.util.WriteContentToFile;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -24,14 +25,14 @@ import java.util.*;
 @Service
 @Slf4j
 public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
-    final String drlPath = System.getProperty("com.bizlem.appDir") + File.separator;
+    private final String drlPath = System.getProperty("com.bizlem.appDir") + File.separator;
     @Autowired
-    GenerateDRLContent drlContent;
+    private GenerateDRLContent drlContent;
 
     @Value("${drools.PojoFilepath}")
     private String pojoPath;
 
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void extractRulesAndVariableInfo(String inputJson) throws IOException {
@@ -39,22 +40,26 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
         log.info("Path of the folder that contains rules file: {}", drlPath);
         ExtractedData extractedData = null;
         Map<String, String> existingVariableNameToDatatype;
-
+        final String POJO_NAME = "VariablePOJO.json";
         // find POJO exist
-        if (ReadFile.isFileAvailable(pojoPath))
-            existingVariableNameToDatatype = ReadFile.getExistingVariableNameAndDataType();
-        else
+        if (ReadFile.isFileAvailable(drlPath)) {
+            TypeReference<HashMap<String, String>> typeRef
+                    = new TypeReference<HashMap<String, String>>() {
+            };
+            existingVariableNameToDatatype = objectMapper.readValue(new File(drlPath.concat(POJO_NAME)), typeRef);
+        } else
             existingVariableNameToDatatype = new HashMap<>();
 
         try {
             extractedData = extractDataFromJson(inputJson);
         } catch (ParseException e) {
-            log.error("Error while parsing the json");
-            e.printStackTrace();
+            log.error(e.getClass().getSimpleName(), e);
         }
+
+        Objects.requireNonNull(extractedData, "Input is null or wrong format.");
         // content
         String drlName = extractedData.getDrlName().concat(".drl");
-        final String POJO_NAME = "VariablePOJO.json";
+
 
         // write DRL File
         String resultContent = drlContent.initDrlContent(extractedData.getRules(), extractedData.getVariableNameToDataType());
@@ -63,11 +68,11 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
 
         // write POJO File
         Map<String, String> mergedVariableToDataType = mergeVariables(existingVariableNameToDatatype, extractedData.getVariableNameToDataType());
-        ObjectMapper objectMapper = new ObjectMapper();
+
         try {
-            String mapdata = objectMapper.writeValueAsString(mergedVariableToDataType);
+            String mapOfData = objectMapper.writeValueAsString(mergedVariableToDataType);
             final String path = drlPath + POJO_NAME;
-            FileUtils.write(new File(path), mapdata, "UTF-8");
+            FileUtils.write(new File(path), mapOfData, "UTF-8");
         } catch (IOException e) {
             log.error(e.getClass().getSimpleName(), e);
         }
@@ -75,11 +80,8 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
 
     public ExtractedData extractDataFromJson(String inputJson) throws ParseException {
         ExtractedData extractedData = new ExtractedData();
-
         List<Rules> rulesList = new ArrayList<>();
-
         Map<String, String> variableNameToDataType = new HashMap<>();
-
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject) parser.parse(inputJson);
 

@@ -15,23 +15,25 @@ import java.util.Map;
 @Slf4j
 public class RuleProcessingController {
 
-  @Autowired
-  ExtractDataFromJson drlGeneratorService;
-  @Autowired
-  RuleCallingService ruleCallingService;
+    @Autowired
+    private
+    ExtractDataFromJson drlGeneratorService;
+    @Autowired
+    private
+    RuleCallingService ruleCallingService;
 
-  @PostMapping("/generaterules")
-  public ResponseEntity<String> processRuleJson(@RequestBody String inputJson) throws IOException {
-    drlGeneratorService.extractRulesAndVariableInfo(inputJson);
-    log.info("method calling processRuleJson");
-    return ResponseEntity.ok().build();
-  }
+    @PostMapping("/generaterules")
+    public ResponseEntity<String> processRuleJson(@RequestBody String inputJson) throws IOException {
+        drlGeneratorService.extractRulesAndVariableInfo(inputJson);
+        log.info("method calling processRuleJson");
+        return ResponseEntity.ok().build();
+    }
 
-  @PostMapping("/callrules/{ruleFileName}/fire")
-  public Map<String, String> callRules(@PathVariable(value = "ruleFileName") String ruleFileName, @RequestBody Map<String, String> pojo) throws IOException {
-    String drl = ruleFileName.concat(".drl");
-    log.info("input value for calling pojo :{}", drl);
+    @PostMapping("/callrules/{ruleFileName}/fire")
+    public Map<String, String> callRules(@PathVariable(value = "ruleFileName") String ruleFileName, @RequestBody Map<String, String> pojo) throws IOException {
+        String drl = ruleFileName.concat(".drl");
+        log.info("input value for calling pojo :{}", drl);
 
-    return ruleCallingService.callRules(drl, pojo);
-  }
+        return ruleCallingService.callRules(drl, pojo);
+    }
 }
