@@ -5,6 +5,6 @@ import java.util.Map;
 
 public interface RuleCallingService {
 
-  Map<String, String> callRules(String drlName, Map<String, String> variablePOJO) throws IOException;
+    Map<String, String> callRules(String drlName, Map<String, String> variablePOJO) throws IOException;
 
 }

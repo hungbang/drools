@@ -33,7 +33,6 @@ public class RuleProcessingController {
     public Map<String, String> callRules(@PathVariable(value = "ruleFileName") String ruleFileName, @RequestBody Map<String, String> pojo) throws IOException {
         String drl = ruleFileName.concat(".drl");
         log.info("input value for calling pojo :{}", drl);
-
         return ruleCallingService.callRules(drl, pojo);
     }
 }

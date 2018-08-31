@@ -1,14 +1,18 @@
 package com.bizlem.drools.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
 import com.bizlem.drools.model.Rules;
 import com.bizlem.drools.service.GenerateDRLContent;
+import com.bizlem.drools.util.Helper;
+import com.google.common.collect.Multimap;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.bizlem.drools.model.DataType.*;
+import static com.bizlem.drools.util.Helper.LOGGER;
+import static com.bizlem.drools.util.Helper.getStringWithoutSign;
 
 @Service
 public class GenerateDRLContentImpl implements GenerateDRLContent {
@@ -16,7 +20,7 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
     private final String newLine = System.lineSeparator();
 
     @Override
-    public String initDrlContent(List<Rules> ruleList, Map<String, String> variableToDataType) {
+    public String initDrlContent(List<Rules> ruleList, Multimap<String, String> variableToDataType) {
 
         StringBuilder buffer = new StringBuilder();
         // Add package structure
@@ -57,31 +61,44 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
         return buffer.toString();
     }
 
-    private String condition(Map<String, String> ruleConditionFields, Map<String, String> variableNameToDataType) {
+    private String condition(Multimap<String, String> ruleConditionFields, Multimap<String, String> variableNameToDataType) {
         List<String> condition = new ArrayList<String>();
-        for (Map.Entry<String, String> entry : ruleConditionFields.entrySet()) {
+        for (Map.Entry<String, String> entry : ruleConditionFields.entries()) {
             String variableName = entry.getKey();
             String variableValue = entry.getValue();
-            String dataType = variableNameToDataType.get(entry.getKey());
+            Collection<String> dataType = variableNameToDataType.get(entry.getKey());
 
             condition.add(valueOnDataType(variableName, variableValue, dataType));
         }
         return String.join(" && ", condition);
     }
 
-    private String valueOnDataType(String variableName, String variableValue, String dataType) {
+    private String valueOnDataType(String variableName, String variableValue, Collection<String> dataType) {
         StringBuilder buffer = new StringBuilder();
 
-        switch (dataType.trim()) {
-            case "String":
+
+        switch (StringUtils.trimToEmpty(dataType.toArray()[0].toString()).toLowerCase()) {
+            case STRING:
                 buffer.append(MAP_GET).append(variableName).append("\")").append(" ");
                 buffer.append(" in (");
                 buffer.append(splitValue(variableValue)).append(") ");
                 break;
 
-            case "Integer":
+            case INTEGER:
+            case DOUBLE:
+            case FLOAT:
                 buffer.append(MAP_GET).append(variableName).append("\")").append(" ");
                 buffer.append(checkOperatorInteger(variableValue)).append(" ");
+                break;
+
+            case DATE:
+                buffer.append(MAP_GET).append(variableName).append("\")").append(" ");
+                buffer.append(checkDateOperation(variableValue)).append(" ");
+                break;
+
+            case PERCENT:
+                buffer.append(MAP_GET).append(variableName).append("\")").append(" ");
+                buffer.append(checkPercentOperation(variableValue)).append(" ");
                 break;
 
             default:
@@ -91,13 +108,14 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
         return buffer.toString();
     }
 
+
     private String splitValue(String variableValue) {
         return Arrays.stream(variableValue.split(",")).map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
     }
 
-    private String action(Map<String, String> ruleActionFields) {
+    private String action(Multimap<String, String> ruleActionFields) {
         StringBuilder buffer = new StringBuilder();
-        for (Map.Entry<String, String> entry : ruleActionFields.entrySet()) {
+        for (Map.Entry<String, String> entry : ruleActionFields.entries()) {
 
             String variableName = entry.getKey();
             String variableValue = entry.getValue();
@@ -114,5 +132,30 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
 
         return " == " + variable;
     }
+
+    private String checkPercentOperation(String variableValue) {
+        String variable = StringUtils.chop(variableValue);
+        String result =getStringWithoutSign(variable);
+        LOGGER.info("text of percentage {} is {}", variableValue, result);
+        if (variable.startsWith("<") || variable.startsWith(">") || variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<="))
+            return variable.substring(0, 1) + result;
+
+        return " == " + result;
+    }
+
+
+    private String checkDateOperation(String variable) {
+        LOGGER.info("Local date string without sign is {}", getStringWithoutSign(variable));
+        long longLocalDate = Helper.longFromLocalDate(variable);
+        LOGGER.info("longLocalDate is {} is extracted from {}", longLocalDate, variable);
+        if (variable.startsWith("<") || variable.startsWith(">") || variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<=")) {
+            return variable.substring(0, 1) + longLocalDate;
+
+        }
+        return " == " + longLocalDate;
+    }
+
+
+
 
 }

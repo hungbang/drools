@@ -7,7 +7,11 @@ import com.bizlem.drools.service.GenerateDRLContent;
 import com.bizlem.drools.util.ReadFile;
 import com.bizlem.drools.util.WriteContentToFile;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONArray;
@@ -32,23 +36,23 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
     @Value("${drools.PojoFilepath}")
     private String pojoPath;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Override
     public void extractRulesAndVariableInfo(String inputJson) throws IOException {
-
         log.info("Path of the folder that contains rules file: {}", drlPath);
         ExtractedData extractedData = null;
-        Map<String, String> existingVariableNameToDatatype;
+        Multimap<String, String> existingVariableNameToDatatype;
         final String POJO_NAME = "VariablePOJO.json";
         // find POJO exist
         if (ReadFile.isFileAvailable(drlPath)) {
-            TypeReference<HashMap<String, String>> typeRef
-                    = new TypeReference<HashMap<String, String>>() {
+
+            TypeReference<ArrayListMultimap<String, String>> typeRef
+                    = new TypeReference<ArrayListMultimap<String, String>>() {
             };
             existingVariableNameToDatatype = objectMapper.readValue(new File(drlPath.concat(POJO_NAME)), typeRef);
         } else
-            existingVariableNameToDatatype = new HashMap<>();
+            existingVariableNameToDatatype = ArrayListMultimap.create();
 
         try {
             extractedData = extractDataFromJson(inputJson);
@@ -67,7 +71,7 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
 
 
         // write POJO File
-        Map<String, String> mergedVariableToDataType = mergeVariables(existingVariableNameToDatatype, extractedData.getVariableNameToDataType());
+        Multimap<String, String> mergedVariableToDataType = mergeVariables(existingVariableNameToDatatype, extractedData.getVariableNameToDataType());
 
         try {
             String mapOfData = objectMapper.writeValueAsString(mergedVariableToDataType);
@@ -81,7 +85,7 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
     public ExtractedData extractDataFromJson(String inputJson) throws ParseException {
         ExtractedData extractedData = new ExtractedData();
         List<Rules> rulesList = new ArrayList<>();
-        Map<String, String> variableNameToDataType = new HashMap<>();
+        Multimap<String, String> variableNameToDataType = ArrayListMultimap.create();
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject) parser.parse(inputJson);
 
@@ -119,8 +123,8 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
         return extractedData;
     }
 
-    public Map<String, String> gerVariableNameToVariableValuePair(JSONArray inputFieldsArray, Map<String, String> variableNameToDataType) {
-        Map<String, String> variableNameToVariableValue = new HashMap<>();
+    public Multimap<String, String> gerVariableNameToVariableValuePair(JSONArray inputFieldsArray, Multimap<String, String> variableNameToDataType) {
+        Multimap<String, String> variableNameToVariableValue = ArrayListMultimap.create();
 
         // Take all data of input fields in type and value
         for (Object obj : inputFieldsArray) {
@@ -142,8 +146,8 @@ public class ExtractDataFromJsonImpl implements ExtractDataFromJson {
         return variable.equals("type") ? (String) keySet.toArray()[1] : variable;
     }
 
-    private Map<String, String> mergeVariables(Map<String, String> existingVariable, Map<String, String> requestedVariable) {
-        Map<String, String> allVariable = new HashMap<>();
+    private Multimap<String, String> mergeVariables(Multimap<String, String> existingVariable, Multimap<String, String> requestedVariable) {
+        Multimap<String, String> allVariable = ArrayListMultimap.create();
         allVariable.putAll(existingVariable);
         allVariable.putAll(requestedVariable);
         return allVariable;
