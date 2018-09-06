@@ -145,7 +145,9 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
         String variable = StringUtils.chop(variableValue);
         String result = getStringWithoutSign(variable);
         LOGGER.info("text of percentage {} is {}", variableValue, result);
-        if (variable.startsWith("<") || variable.startsWith(">") || variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<="))
+        if (variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<="))
+            return variable.substring(0, 2) + result;
+        if (variable.startsWith("<") || variable.startsWith(">"))
             return variable.substring(0, 1) + result;
 
         return " == " + result;
@@ -156,7 +158,9 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
         LOGGER.info("Local date string without sign is {}", getStringWithoutSign(variable));
         long longLocalDate = Helper.longFromLocalDate(variable);
         LOGGER.info("longLocalDate is {} is extracted from {}", longLocalDate, variable);
-        if (variable.startsWith("<") || variable.startsWith(">") || variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<=")) {
+        if (variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<="))
+            return variable.substring(0, 2) + longLocalDate;
+        if (variable.startsWith("<") || variable.startsWith(">")) {
             return variable.substring(0, 1) + longLocalDate;
 
         }
