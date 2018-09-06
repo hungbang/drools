@@ -57,16 +57,18 @@ public class Helper {
         if (StringUtils.isBlank(variable))
             throw new IllegalArgumentException("Argument must not blank.");
 
+        if (variable.startsWith("<="))
+            return StringUtils.remove(variable, "<=");
         if (variable.startsWith("<"))
             return StringUtils.remove(variable, "<");
+        if (variable.startsWith(">="))
+            return StringUtils.remove(variable, ">=");
         if (variable.startsWith(">"))
             return StringUtils.remove(variable, ">");
         if (variable.startsWith("=="))
             return StringUtils.remove(variable, "==");
-        if (variable.startsWith(">="))
-            return StringUtils.remove(variable, ">=");
-        if (variable.startsWith("<="))
-            return StringUtils.remove(variable, "<=");
+
+
         return variable;
     }
 
