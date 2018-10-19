@@ -86,8 +86,7 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
         switch (StringUtils.trimToEmpty(dataType.toArray()[0].toString()).toLowerCase()) {
             case STRING:
                 buffer.append(MAP_GET).append(variableName).append("\")").append(" ");
-                buffer.append(" in (");
-                buffer.append(splitValue(variableValue)).append(") ");
+                buffer.append(checkOperationString(variableValue));
                 break;
 
             case INTEGER:
@@ -116,6 +115,13 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
         return buffer.toString();
     }
 
+    private String checkOperationString(String variable){
+        if(variable.startsWith("!=")){
+            return "!=" + "\"" + StringUtils.remove(variable, "!=") + "\"";
+        }else {
+            return " in (" + splitValue(variable) + ") ";
+        }
+    }
 
     private String splitValue(String variableValue) {
         return Arrays.stream(variableValue.split(",")).map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
@@ -135,7 +141,7 @@ public class GenerateDRLContentImpl implements GenerateDRLContent {
     }
 
     private String checkOperatorInteger(String variable) {
-        if (variable.startsWith("<") || variable.startsWith(">") || variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<="))
+        if (variable.startsWith("<") || variable.startsWith(">") || variable.startsWith("==") || variable.startsWith(">=") || variable.startsWith("<=") || variable.startsWith("!="))
             return variable;
 
         return " == " + variable;
