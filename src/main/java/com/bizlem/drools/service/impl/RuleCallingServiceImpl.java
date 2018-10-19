@@ -48,6 +48,7 @@ public class RuleCallingServiceImpl implements RuleCallingService {
         kSession.fireAllRules();
 
         log.info("fired all rules");
+        kSession.dispose();
         return postHandle(multimap);
     }
 

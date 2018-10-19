@@ -25,6 +25,7 @@ public class RuleProcessingController {
     @PostMapping("/generaterules")
     public ResponseEntity<String> processRuleJson(@RequestBody String inputJson) throws IOException {
         drlGeneratorService.extractRulesAndVariableInfo(inputJson);
+        System.out.println("inputJson    ::"+inputJson);
         log.info("method calling processRuleJson");
         return ResponseEntity.ok().build();
     }
